@@ -36,13 +36,23 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/toys/:category', async(req, res) => {
-        const category = req.params.category;
-        const query = {category: category}
+    // get single toy of requested id
+    app.get('/toy/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
 
-        const result = await toysCollection.find(query).toArray()
-        res.send(result)
-    })
+      const result = await toysCollection.findOne(query);
+      res.send(result);
+    });
+
+    // get all toy of requested category
+    app.get('/toys/:category', async (req, res) => {
+      const category = req.params.category;
+      const query = { category: category };
+
+      const result = await toysCollection.find(query).toArray();
+      res.send(result);
+    });
 
     app.post('/toys', async (req, res) => {
       const toy = req.body;
@@ -52,10 +62,10 @@ async function run() {
     });
 
     // category route
-    app.get('/categories', async(req,res) => {
-        const result = await categoriesCollection.find().toArray();
-        res.send(result)
-    })
+    app.get('/categories', async (req, res) => {
+      const result = await categoriesCollection.find().toArray();
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db('admin').command({ ping: 1 });
     console.log('Pinged your deployment. You successfully connected to MongoDB!');
