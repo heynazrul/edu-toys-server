@@ -57,16 +57,33 @@ async function run() {
       const limit = parseInt(req.query.limit) || 20;
       const skip = (page - 1) * limit;
 
+      console.log(!req.headers?.order);
+      const order = Number(req.headers.order) || 1;
+      console.log(order);
+
       let query = {};
       if (req.query?.email) {
         query = { email: req.query.email };
       }
-      const result = await toysCollection.find(query).skip(skip).limit(limit).toArray();
+      const result = await toysCollection.find(query).sort({ price: order }).skip(skip).limit(limit).toArray();
+      res.send(result);
+    });
+
+    app.get('/allToys', async (req, res) => {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const skip = (page - 1) * limit;
+
+      const result = await toysCollection.find().skip(skip).limit(limit).toArray();
       res.send(result);
     });
 
     app.post('/toys', async (req, res) => {
-      const toy = req.body;
+      let toy = req.body;
+      toy = {
+        ...toy,
+        price: Number(toy.price),
+      };
       const result = await toysCollection.insertOne(toy);
       res.send(result);
     });
@@ -78,7 +95,7 @@ async function run() {
       console.log(price, quantity, description);
       const updateDoc = {
         $set: {
-          price: price,
+          price: Number(price),
           quantity: quantity,
           description: description,
         },
