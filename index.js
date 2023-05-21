@@ -26,16 +26,16 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const toysCollection = client.db('eduToys').collection('toys');
     const categoriesCollection = client.db('eduToys').collection('categories');
 
     // creating indexing on Toy name
-    const indexKeys = { toyName: 1 };
-    const indexOptions = { name: 'searchToy' };
+    // const indexKeys = { toyName: 1 };
+    // const indexOptions = { name: 'searchToy' };
 
-    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+    // const result = await toysCollection.createIndex(indexKeys, indexOptions);
 
     app.get('/searchByToy/:text', async (req, res) => {
       const searchText = req.params.text;
@@ -45,19 +45,23 @@ async function run() {
     });
 
     // get total number of toys in database
-    app.get('/totalToys', async(req, res) => {
-      const result = await toysCollection.estimatedDocumentCount()
-      res.send({totalToys: result})
-    })
-    
+    app.get('/totalToys', async (req, res) => {
+      const result = await toysCollection.estimatedDocumentCount();
+      res.send({ totalToys: result });
+    });
+
     // get user specific & all toys
     app.get('/toys', async (req, res) => {
-      console.log(req.query.email);
+      console.log(req.query);
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const skip = (page - 1) * limit;
+
       let query = {};
       if (req.query?.email) {
         query = { email: req.query.email };
       }
-      const result = await toysCollection.find(query).toArray();
+      const result = await toysCollection.find(query).skip(skip).limit(limit).toArray();
       res.send(result);
     });
 
