@@ -31,6 +31,25 @@ async function run() {
     const toysCollection = client.db('eduToys').collection('toys');
     const categoriesCollection = client.db('eduToys').collection('categories');
 
+    // creating indexing on Toy name
+    const indexKeys = { toyName: 1 };
+    const indexOptions = { name: 'searchToy' };
+
+    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+
+    app.get('/searchByToy/:text', async (req, res) => {
+      const searchText = req.params.text;
+      const query = { toyName: { $regex: searchText, $options: 'i' } };
+      const result = await toysCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // get total number of toys in database
+    app.get('/totalToys', async(req, res) => {
+      const result = await toysCollection.estimatedDocumentCount()
+      res.send({totalToys: result})
+    })
+    
     // get user specific & all toys
     app.get('/toys', async (req, res) => {
       console.log(req.query.email);
